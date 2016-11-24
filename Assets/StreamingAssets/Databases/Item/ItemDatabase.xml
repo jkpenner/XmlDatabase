@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Assets>
+  <Asset Id="1" Name="lajfd;lasf" Type="ItemAsset">
+    <AssetParams Prefab="" />
+  </Asset>
+  <Asset Id="2" Name="asdfasdfasdf" Type="ItemAsset">
+    <AssetParams Prefab="" />
+  </Asset>
+  <Asset Id="3" Name="asdfsadf" Type="ItemAsset">
+    <AssetParams Prefab="" />
+  </Asset>
+  <Asset Id="4" Name="fsdfasdf" Type="ItemAsset">
+    <AssetParams Prefab="" />
+  </Asset>
+  <Asset Id="5" Name="dasfdaf" Type="ItemAsset">
+    <AssetParams Prefab="" />
+  </Asset>
+  <Asset Id="6" Name="" Type="ItemAsset">
+    <AssetParams Prefab="" />
+  </Asset>
+</Assets>
