@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Xml;
+using System.Linq;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -14,10 +15,13 @@ namespace UtilitySystem.XmlDatabase {
     /// Abstract Xml Database with that can create and save a database to an xml file.
     /// </summary>
     public abstract class AbstractXmlDatabase<T> where T : class, IXmlDatabaseAsset {
+
         /// <summary>
         /// Creates a instance of an asset given a string of the asset type
         /// </summary>
-        protected abstract T CreateAssetOfType(string type);
+        public abstract T CreateAssetOfType(string type);
+
+        public virtual string[] GetListOfAssetTypes() { return null; }
 
         /// <summary>
         /// The path to the database file within the StreamingAssets folder.
@@ -58,7 +62,7 @@ namespace UtilitySystem.XmlDatabase {
         }
 
         public T GetWithId(int id) {
-            return GetWithId(id, false, false);
+            return GetWithId(id, true, true);
         }
 
         /// <summary>
@@ -100,6 +104,9 @@ namespace UtilitySystem.XmlDatabase {
             return asset != null;
         }
 
+        /// <summary>
+        /// Get the Next Id from the asset dict after the highest id value.
+        /// </summary>
         public int GetNextId() {
             int maxId = 0;
             foreach (var asset in AssetDict.Values) {
@@ -110,6 +117,10 @@ namespace UtilitySystem.XmlDatabase {
             return maxId + 1;
         }
 
+
+        /// <summary>
+        /// Gets the first available id from the asset dict.
+        /// </summary>
         public int GetFirstAvailableId() {
             if (GetCount() <= 0) {
                 return 1;
@@ -161,46 +172,101 @@ namespace UtilitySystem.XmlDatabase {
         /// Reads a single asset from the xml reader
         /// </summary>
         private T ReadAsset(XmlReader reader) {
-            // Get the basic values for the asset
-            int id = int.Parse(reader.GetAttribute("Id"));
-            string name = reader.GetAttribute("Name");
-            string type = reader.GetAttribute("Type");
+            // If the reader is not at an Asset element return the default value
+            if (reader.IsStartElement("Asset") == false) return default(T);
 
-            // Create a new instance of the read type
-            var asset = CreateAssetOfType(type);
-            if (asset != null) {
-                // Assign the read values
-                asset.Id = id;
-                asset.Name = name;
+            // If the asset does not have any attributes return;
+            if (reader.HasAttributes == false) {
+                Debug.LogWarningFormat("[{0}]: Found Asset with no assigned attributes.", this.DatabaseName);
+                return default(T);
+            }
 
-                // Reached end of asset, return created asset
-                if (reader.IsStartElement() && reader.IsEmptyElement) return asset;
+            // Assign default values to read asset values
+            int id = -1;
+            string name = string.Empty;
+            string type = string.Empty;
 
-                // read the asset until we reach the end element
-                while (reader.Read()) {
-                    if (reader.NodeType == XmlNodeType.EndElement) {
-                        if (reader.Name == "Asset") {
-                            break;
-                        }
-                    }
-
-                    // Check if we are reading an element of the asset
-                    if (reader.NodeType == XmlNodeType.Element) {
-                        // Make the object load it's data
-                        asset.OnLoadAsset(reader);
-                    }
-                }
+            // Check if the assest has a id value, Id is a required attribute
+            if (reader["Id"] != null) {
+                id = int.Parse(reader.GetAttribute("Id"));
             } else {
-                Debug.LogFormat("[{0}]: Unhandled asset type of {1} assigned to asset with id {2}.", DatabaseName, type, id);
+                Debug.LogErrorFormat("[{0}]: Asset found with no Id assigned. Id attribute is required!", this.DatabaseName);
+                return default(T);
+            }
+
+            // Check if the asset has a type assigned, Type is a required attribute
+            if (reader["Type"] != null) {
+                type = reader.GetAttribute("Type");
+            } else {
+                Debug.LogErrorFormat("[{0}]: Asset found with no Type assigned. Type attribute is required!", this.DatabaseName);
+                return default(T);
+            }
+
+            // Check if the asset has a name assigned, Name is not a required attribute
+            if (reader["Name"] != null) {
+                name = reader.GetAttribute("Name");
+            } else {
+                Debug.LogWarningFormat("[{0}]: Found Asset with no Name assigned.", this.DatabaseName);
+            }
+
+            // Attempt to create an instance of the read type
+            var asset = CreateAssetOfType(type);
+            if (asset == null) {
+                Debug.LogErrorFormat("[{0}]: Found Asset with an unhandled type of {1}, assigned to " +
+                    "asset with an Id of {2}.", this.DatabaseName, type, id);
+                return default(T);
+            }
+
+            // Assign the read Id and Name values
+            asset.Id = id;
+            asset.Name = name;
+
+            // If the asset element is empty return the created asset.
+            // Note: Assets can add additional attributes to the Asset 
+            // start element, but this attributes will never be loaded.
+            if (reader.IsEmptyElement == true) return asset;
+
+            // read the asset until we reach the end element
+            while (reader.Read()) {
+                // Stop reading the asset when we reach the Asset end element
+                if (reader.Name == "Asset" && reader.NodeType == XmlNodeType.EndElement) {
+                    break;
+                }
+
+                // Check if we are reading an element of the asset
+                if (reader.NodeType == XmlNodeType.Element) {
+                    // Make the object load it's data
+                    asset.OnLoadAsset(reader);
+                }
             }
 
             // Return the asset as the database's asset type
             return asset as T;
         }
+        
+        /// <summary>
+        /// Loads all asset into the database.
+        /// Clears any assets already in the database.
+        /// </summary>
+        public void LoadAssetsIntoDatabase() {
+            LoadAssetsIntoDatabase(true);
+        }
+
+        /// <summary>
+        /// Loads all assets into the database. Has 
+        /// option to clear assets already in the database.
+        /// </summary>
+        public void LoadAssetsIntoDatabase(bool clear) {
+            // Remove previous asset from database if clear is true
+            if (clear == true) { AssetDict.Clear(); }
+
+            AssetDict = LoadAllAssets();
+        }
 
         /// <summary>
         /// Finds the asset with the given id in the database's xml file,
-        /// then loads and returns the asset if found.
+        /// then loads and returns the asset if found. Does not add loaded asset
+        /// to the database instance.
         /// </summary>
         public T LoadById(int id) {
             CreateDatabaseIfMissing();
@@ -220,12 +286,16 @@ namespace UtilitySystem.XmlDatabase {
                 using (XmlReader reader = XmlReader.Create(stream)) {
                     // Read through the xml file till we find an asset element
                     while (reader.Read()) {
-                        if (reader.NodeType == XmlNodeType.Element) {
-                            if (reader.Name == "Asset") {
+                        if (reader.IsStartElement("Asset")) {
+                            // Check if asset has an Id value
+                            if (reader["Id"] != null) {
                                 // If the asset element has a matching id, read the asset
                                 if (int.Parse(reader.GetAttribute("Id")) == id) {
                                     return ReadAsset(reader);
                                 }
+                            } else {
+                                Debug.LogErrorFormat("[{0}]: Asset found with no Id assigned. Id attribute is required!", this.DatabaseName);
+                                return default(T);
                             }
                         }
                     }
@@ -237,30 +307,20 @@ namespace UtilitySystem.XmlDatabase {
         }
 
         /// <summary>
-        /// Loads all asset into the database.
-        /// Clears any assets already in the database.
+        /// Loads all assets from the database's xml file and returns a
+        /// dictionary with all loaded assets with keys set to the assets' id.
+        /// Does not add loaded asset to the database instance.
         /// </summary>
-        public void LoadAssets() {
-            LoadAssets(true);
-        }
-
-        /// <summary>
-        /// Loads all assets into the database. Has 
-        /// option to clear assets already in the database.
-        /// </summary>
-        public void LoadAssets(bool clear) {
+        public Dictionary<int, T> LoadAllAssets() {
             CreateDatabaseIfMissing();
 
-            // Remove previous asset from database if clear is true
-            if (clear == true) {
-                AssetDict.Clear();
-            }
+            Dictionary<int, T> loadedAssets = new Dictionary<int, T>();
 
             // Get the database file stream
             using (Stream stream = GetFileStreamToLoad()) {
                 if (stream == null) {
                     Debug.LogFormat("[{0}]: Could not load assets. No load stream found.", DatabaseName);
-                    return;
+                    return null;
                 }
 
                 // ToDo: Decrypt the database file if needed
@@ -269,24 +329,27 @@ namespace UtilitySystem.XmlDatabase {
                 using (XmlReader reader = XmlReader.Create(stream)) {
                     // Read through the xml file till we find an asset element
                     while (reader.Read()) {
-                        if (reader.NodeType == XmlNodeType.Element) {
-                            if (reader.Name == "Asset") {
-                                // Read the asset and add it to the database
-                                var asset = ReadAsset(reader);
-                                if (asset != null) {
-                                    if (AssetDict.ContainsKey(asset.Id)) {
-                                        Debug.LogWarningFormat("[{0}]: Asset {1} has Id {2}, but id is already assigned to {3}",
-                                            DatabaseName, asset.Name, asset.Id, AssetDict[asset.Id]);
-                                    } else {
-                                        AssetDict.Add(asset.Id, asset);
-                                    }
+                        if (reader.IsStartElement("Asset")) {
+                            // Read the asset and add it to the database
+                            var asset = ReadAsset(reader);
+                            if (asset != null) {
+                                if (loadedAssets.ContainsKey(asset.Id)) {
+                                    Debug.LogWarningFormat("[{0}]: Asset {1} has Id {2}, but id is already assigned to {3}",
+                                        DatabaseName, asset.Name, asset.Id, loadedAssets[asset.Id]);
+                                } else {
+                                    loadedAssets.Add(asset.Id, asset);
                                 }
+                            } else {
+                                Debug.LogWarningFormat("[{0}]: Read Invalid Asset", this.DatabaseName);
                             }
                         }
                     }
                 }
             }
+
+            return loadedAssets;
         }
+
 
         /// <summary>
         /// Saves all assets in the database to the database xml file
@@ -315,7 +378,14 @@ namespace UtilitySystem.XmlDatabase {
                         writer.WriteStartElement("Asset");
                         writer.WriteAttributeString("Id", asset.Id.ToString());
                         writer.WriteAttributeString("Name", asset.Name);
-                        writer.WriteAttributeString("Type", asset.GetType().Name);
+
+                        // Check if the perferred type string is empty, if so
+                        // then use the name of the asset's type as the value.
+                        if (string.IsNullOrEmpty(asset.PerferredTypeString)) {
+                            writer.WriteAttributeString("Type", asset.GetType().Name);
+                        } else {
+                            writer.WriteAttributeString("Type", asset.PerferredTypeString);
+                        }
 
                         // Make the object save it's values
                         asset.OnSaveAsset(writer);
@@ -340,16 +410,49 @@ namespace UtilitySystem.XmlDatabase {
         }
 
         /// <summary>
+        /// Checks if the passed string matches the typeparam's Name or
+        /// if the string matches the typeparam's Name without an Asset
+        /// postfix, if the typeparam contains a posfix Asset.
+        /// 
+        /// Examples: If U is ItemAsset, the method will return true if
+        /// the passed string is 'ItemAsset' or 'Item'.
+        /// </summary>
+        protected bool DoesStringMatchType<U>(string value) where U : IXmlDatabaseAsset {
+            string assetTypeName = typeof(U).Name;
+
+            // Check if the value matches the passed type's name
+            if (assetTypeName == value) {
+                return true;
+            }
+
+            // Check if the type's name has an Asset postfix
+            if (assetTypeName.Contains("Asset")) {
+                return DoesStringMatchTypeWithout<U>(value, "Asset");
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Replaces any occurances of the strToRemove from the passed value,
+        /// then checks if the typeparam's name is equal to the passed value.
+        /// </summary>
+        protected bool DoesStringMatchTypeWithout<U>(string value, string strToRemove) {
+            var valueToCheck = typeof(U).Name.Replace(strToRemove, "");
+            return valueToCheck == value;
+        }
+
+        /// <summary>
         /// Get the database path based off the Streaming Assets folder in the Application's database 
         /// </summary>
-        public string GetDatabaseFullPath() {
+        protected string GetDatabaseFullPath() {
             return string.Format(@"{0}/StreamingAssets/{1}{2}", Application.dataPath, DatabasePath, DatabaseName);
         }
 
         /// <summary>
         /// Get the file stream to read the xml from
         /// </summary>
-        public Stream GetFileStreamToLoad() {
+        protected Stream GetFileStreamToLoad() {
             return File.OpenRead(GetDatabaseFullPath());
         }
 
@@ -357,7 +460,7 @@ namespace UtilitySystem.XmlDatabase {
         /// Check if the database exists. If the database is missing
         /// create a new xml file with default values.
         /// </summary>
-        public void CreateDatabaseIfMissing() {
+        protected void CreateDatabaseIfMissing() {
             if (!File.Exists(GetDatabaseFullPath())) {
 
                 Debug.LogFormat(@"[{0}]: No database found at {1}. Creating a new empty database file.", DatabaseName, GetDatabaseFullPath());

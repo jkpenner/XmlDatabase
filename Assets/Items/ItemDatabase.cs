@@ -16,7 +16,7 @@ public class ItemDatabase : AbstractXmlDatabase<ItemAsset> {
     public override string DatabaseName { get { return @"ItemDatabase.xml"; } }
     public override string DatabasePath { get { return @"Databases/Item/"; } }
 
-    protected override ItemAsset CreateAssetOfType(string type) {
+    public override ItemAsset CreateAssetOfType(string type) {
         if (type == typeof(ItemAsset).Name) {
             return new ItemAsset(this.GetNextId());
         }

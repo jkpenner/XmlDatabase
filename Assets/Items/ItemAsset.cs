@@ -19,7 +19,7 @@ public class ItemAsset : XmlDatabaseAsset {
 
     public override void OnSaveAsset(XmlWriter writer) {
         writer.WriteStartElement("AssetParams");
-        writer.WriteAttributeString("Prefab", GetAssetResourcePath(Prefab));
+        writer.WriteAttributeString("Prefab", XmlDatabaseUtility.GetAssetResourcePath(Prefab));
         writer.WriteEndElement();
     }
 }
