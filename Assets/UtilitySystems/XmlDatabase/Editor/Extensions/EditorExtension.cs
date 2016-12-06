@@ -1,4 +1,4 @@
-﻿namespace UtilitySystem.XmlDatabase.Editor {
+﻿namespace UtilitySystems.XmlDatabase.Editor {
     public abstract class EditorExtension : IEditorExtension {
         public abstract bool CanHandleType(System.Type type);
         public abstract void OnGUI(object asset);

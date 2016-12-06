@@ -1,16 +1,14 @@
 ﻿using UnityEngine;
-using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Xml;
-using System.Linq;
 
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
 
-namespace UtilitySystem.XmlDatabase {
+namespace UtilitySystems.XmlDatabase {
     /// <summary>
     /// Abstract Xml Database with that can create and save a database to an xml file.
     /// </summary>
@@ -61,16 +59,16 @@ namespace UtilitySystem.XmlDatabase {
             }
         }
 
-        public T GetWithId(int id) {
-            return GetWithId(id, true, true);
+        public T Get(int assetId) {
+            return Get(assetId, true);
         }
 
         /// <summary>
         /// Get the asset with the given id
         /// </summary>
-        public T GetWithId(int id, bool tryToLoadAsset, bool addAssetToDatabaseOnLoad = false) {
+        public T Get(int assetId, bool tryToLoadAsset) {
             T asset;
-            if (TryGetWithId(id, out asset, tryToLoadAsset, addAssetToDatabaseOnLoad)) {
+            if (TryGet(assetId, out asset, tryToLoadAsset)) {
                 return asset;
             }
             return default(T);
@@ -80,34 +78,37 @@ namespace UtilitySystem.XmlDatabase {
         /// Checks the Instance of the database for an asset with the given Id. Also can
         /// try to load the asset from the database file if no asset is initially found.
         /// </summary>
-        /// <param name="id">Id of asset</param>
+        /// <param name="assetId">Id of asset</param>
         /// <param name="asset">Assigned to if asset is found</param>
-        /// <param name="tryToLoadAsset">Try to load asset from file if not currently loaded</param>
+        /// <param name="loadAssetIfMissing">Try to load asset from file if not currently loaded</param>
         /// <returns>If an asset with the passed Id was found</returns>
-        public bool TryGetWithId(int id, out T asset, bool tryToLoadAsset = false, bool addAssetToDatabaseOnLoad = false) {
+        public bool TryGet(int assetId, out T asset, bool loadAssetIfMissing = false) {
             // Check if asset is already in the database
-            if (AssetDict.ContainsKey(id)) {
-                asset = AssetDict[id];
+            if (AssetDict.ContainsKey(assetId)) {
+                asset = AssetDict[assetId];
                 return true;
             }
 
             // Attempt to load the asset, if not in database
-            if (tryToLoadAsset == true) {
-                asset = LoadById(id);
-                if (asset != null && addAssetToDatabaseOnLoad) {
+            if (loadAssetIfMissing == true) {
+                asset = LoadAsset(assetId);
+                // If asset was loaded successfully
+                // add the asset to the database
+                if (asset != null) {
                     Add(asset);
                 }
             } else {
                 asset = null;
             }
 
+            // Was an asset found
             return asset != null;
         }
 
         /// <summary>
         /// Get the Next Id from the asset dict after the highest id value.
         /// </summary>
-        public int GetNextId() {
+        public int GetNextHighestId() {
             int maxId = 0;
             foreach (var asset in AssetDict.Values) {
                 if (asset.Id > maxId) {
@@ -122,7 +123,7 @@ namespace UtilitySystem.XmlDatabase {
         /// Gets the first available id from the asset dict.
         /// </summary>
         public int GetFirstAvailableId() {
-            if (GetCount() <= 0) {
+            if (GetAssetCount() <= 0) {
                 return 1;
             } else {
                 int targetId = 1;
@@ -145,7 +146,7 @@ namespace UtilitySystem.XmlDatabase {
         /// Get the number of assets in the database
         /// </summary>
         /// <returns></returns>
-        public int GetCount() {
+        public int GetAssetCount() {
             return AssetDict.Count;
         }
 
@@ -161,10 +162,13 @@ namespace UtilitySystem.XmlDatabase {
         /// <summary>
         /// Replaces the asset at the given index with a different asset
         /// </summary>
-        public void Replace(int id, T obj) {
+        public void Set(int id, T obj) {
             if (AssetDict.ContainsKey(id)) {
                 AssetDict[id] = obj;
                 obj.Id = id;
+            } else {
+                obj.Id = id;
+                AssetDict.Add(id, obj);
             }
         }
 
@@ -226,6 +230,10 @@ namespace UtilitySystem.XmlDatabase {
             // start element, but this attributes will never be loaded.
             if (reader.IsEmptyElement == true) return asset;
 
+            //XmlSerializer serializer = new XmlSerializer(asset.GetType());
+            //
+            //var deserializedAsset = (XmlDatabaseAsset)serializer.Deserialize(reader.ReadSubtree());
+
             // read the asset until we reach the end element
             while (reader.Read()) {
                 // Stop reading the asset when we reach the Asset end element
@@ -248,19 +256,36 @@ namespace UtilitySystem.XmlDatabase {
         /// Loads all asset into the database.
         /// Clears any assets already in the database.
         /// </summary>
-        public void LoadAssetsIntoDatabase() {
+        public void LoadDatabase() {
             LoadAssetsIntoDatabase(true);
         }
 
         /// <summary>
         /// Loads all assets into the database. Has 
         /// option to clear assets already in the database.
+        /// 
+        /// defaultly does not override values within the database. If
+        /// overrideValues is true and a item is loaded with the same
+        /// id the new item overrides the old item.
         /// </summary>
-        public void LoadAssetsIntoDatabase(bool clear) {
+        public void LoadAssetsIntoDatabase(bool clear, bool overrideValues = false) {
             // Remove previous asset from database if clear is true
-            if (clear == true) { AssetDict.Clear(); }
+            if (clear == true) {
+                AssetDict.Clear();
+                AssetDict = LoadAllAssets();
+            } else {
+                var assetsToLoad = LoadAllAssets();
+                foreach (var asset in assetsToLoad) {
+                    if (AssetDict.ContainsKey(asset.Key)) {
+                        if (overrideValues == true) {
+                            AssetDict[asset.Key] = asset.Value;
+                        }
+                    } else {
+                        AssetDict.Add(asset.Key, asset.Value);
+                    }
+                }
 
-            AssetDict = LoadAllAssets();
+            }
         }
 
         /// <summary>
@@ -268,7 +293,7 @@ namespace UtilitySystem.XmlDatabase {
         /// then loads and returns the asset if found. Does not add loaded asset
         /// to the database instance.
         /// </summary>
-        public T LoadById(int id) {
+        public T LoadAsset(int assetId) {
             CreateDatabaseIfMissing();
 
             // Get the database file stream
@@ -290,7 +315,7 @@ namespace UtilitySystem.XmlDatabase {
                             // Check if asset has an Id value
                             if (reader["Id"] != null) {
                                 // If the asset element has a matching id, read the asset
-                                if (int.Parse(reader.GetAttribute("Id")) == id) {
+                                if (int.Parse(reader.GetAttribute("Id")) == assetId) {
                                     return ReadAsset(reader);
                                 }
                             } else {
@@ -352,7 +377,8 @@ namespace UtilitySystem.XmlDatabase {
 
 
         /// <summary>
-        /// Saves all assets in the database to the database xml file
+        /// Saves all assets in the database to the database xml file,
+        /// overrides the old values within the database's xml.
         /// </summary>
         public void SaveAssets() {
             CreateDatabaseIfMissing();
@@ -460,10 +486,9 @@ namespace UtilitySystem.XmlDatabase {
         /// Check if the database exists. If the database is missing
         /// create a new xml file with default values.
         /// </summary>
-        protected void CreateDatabaseIfMissing() {
+        private void CreateDatabaseIfMissing() {
             if (!File.Exists(GetDatabaseFullPath())) {
-
-                Debug.LogFormat(@"[{0}]: No database found at {1}. Creating a new empty database file.", DatabaseName, GetDatabaseFullPath());
+                //Debug.LogFormat(@"[{0}]: No database found at {1}. Creating a new empty database file.", DatabaseName, GetDatabaseFullPath());
                 Directory.CreateDirectory(string.Format("{0}/StreamingAssets/{1}", Application.dataPath, DatabasePath));
 
                 // Write the default xml file

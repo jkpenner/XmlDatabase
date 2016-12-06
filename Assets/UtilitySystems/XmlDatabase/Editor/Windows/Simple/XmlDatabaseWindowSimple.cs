@@ -3,7 +3,7 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 
-namespace UtilitySystem.XmlDatabase.Editor {
+namespace UtilitySystems.XmlDatabase.Editor {
     abstract public class XmlDatabaseWindowSimple<DatabaseAssetType> 
         : XmlDatabaseWindow<DatabaseAssetType> where DatabaseAssetType 
         : class, IXmlDatabaseAsset, new() {
@@ -68,7 +68,7 @@ namespace UtilitySystem.XmlDatabase.Editor {
                 }
             }
 
-            if (database.GetCount() == 0) {
+            if (database.GetAssetCount() == 0) {
                 GUILayout.Label("No assets in database.\nClick 'Add New' to create an asset.", EditorStyles.centeredGreyMiniLabel);
             }
 

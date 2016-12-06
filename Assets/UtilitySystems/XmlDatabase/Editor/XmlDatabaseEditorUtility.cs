@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEditor;
 
-namespace UtilitySystem.XmlDatabase.Editor {
+namespace UtilitySystems.XmlDatabase.Editor {
     static public class XmlDatabaseEditorUtility {
         public delegate void SelectEvent<T>(T asset);
 
@@ -44,7 +44,7 @@ namespace UtilitySystem.XmlDatabase.Editor {
 
             foreach(var asset in database.GetAssets()) {
                 menu.AddItem(new GUIContent(asset.Name), false,
-                    (index) => { callback(database.GetWithId(asset.Id)); }, asset.Id);
+                    (index) => { callback(database.Get(asset.Id)); }, asset.Id);
             }
 
             return menu;

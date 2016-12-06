@@ -4,13 +4,13 @@ using UnityEditor;
 using System;
 using System.Collections.Generic;
 
-namespace UtilitySystem.XmlDatabase.Editor {
+namespace UtilitySystems.XmlDatabase.Editor {
     public abstract class XmlDatabaseWindow<DatabaseAssetType> 
         : EditorWindow where DatabaseAssetType 
         : class, IXmlDatabaseAsset, new() {
 
         protected abstract AbstractXmlDatabase<DatabaseAssetType> GetDatabaseInstance();
-        protected abstract DatabaseAssetType CreateNewDatabaseAsset();
+        
 
         protected abstract void DisplayAssetGUI(DatabaseAssetType asset);
 
@@ -55,14 +55,6 @@ namespace UtilitySystem.XmlDatabase.Editor {
             }
         }
 
-        protected virtual void OnEnable() {
-            GetDatabaseInstance().LoadAssetsIntoDatabase();
-        }
-
-        protected virtual void OnDisable() {
-
-        }
-
         protected virtual void DisplaySaveButton() {
             if (GUILayout.Button("Save", EditorStyles.toolbarButton, GUILayout.Width(60))) {
                 if (EditorUtility.DisplayDialog("Save Database", "Save current data to the XML document?", "Save", "Cancel")) {
@@ -74,16 +66,20 @@ namespace UtilitySystem.XmlDatabase.Editor {
         protected virtual void DisplayLoadButton() {
             if (GUILayout.Button("Load", EditorStyles.toolbarButton, GUILayout.Width(60))) {
                 if (EditorUtility.DisplayDialog("Load Database", "Loading values from the database will override all unsaved changes in the editor.", "Load", "Cancel")) {
-                    GetDatabaseInstance().LoadAssetsIntoDatabase();
+                    GetDatabaseInstance().LoadDatabase();
                 }
             }
         }
 
-        protected virtual void OnAddNewAssetClick() {
-            var newAsset = new DatabaseAssetType();
-            newAsset.Id = GetDatabaseInstance().GetNextId();
-            SelectedAssetId = newAsset.Id;
+        protected virtual DatabaseAssetType CreateDefaultAsset() {
+            var defaultAsset = new DatabaseAssetType();
+            defaultAsset.Id = GetDatabaseInstance().GetNextHighestId();
+            return defaultAsset;
+        }
 
+        protected virtual void OnAddNewAssetClick() {
+            var newAsset = CreateDefaultAsset();
+            SelectedAssetId = newAsset.Id;
             GetDatabaseInstance().Add(newAsset);
         }
 

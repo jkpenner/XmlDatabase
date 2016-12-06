@@ -1,23 +1,20 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-namespace UtilitySystem.XmlDatabase.Editor {
-    public abstract class XmlDatabaseWindowComplexExt<DatabaseAssetType>
-        : XmlDatabaseWindowComplex<DatabaseAssetType>
-        where DatabaseAssetType : class, IXmlDatabaseAsset, new() {
-        private Vector2 extensionScroll;
-
+namespace UtilitySystems.XmlDatabase.Editor {
+    public abstract class XmlDatabaseWindowSimpleExt<DatabaseAssetType> : XmlDatabaseWindowSimple<DatabaseAssetType>
+    where DatabaseAssetType : class, IXmlDatabaseAsset, new() {
         private IEditorExtension[] extensions;
         protected abstract IEditorExtension[] GetExtensions();
 
-        protected override void OnEnable() {
+        protected virtual void OnEnable() {
             extensions = GetExtensions();
             foreach (var extension in extensions) {
                 extension.OnEnable();
             }
         }
 
-        protected override void OnDisable() {
+        protected virtual void OnDisable() {
             foreach (var extension in extensions) {
                 extension.OnDisable();
             }
@@ -25,17 +22,16 @@ namespace UtilitySystem.XmlDatabase.Editor {
         }
 
         protected override void DisplayAssetGUI(DatabaseAssetType asset) {
-            GUILayout.Label(asset.Name, EditorStyles.toolbarButton);
+            GUILayout.BeginHorizontal("Box");
+            GUILayout.Label(string.Format("Id: {0} Name:", asset.Id), GUILayout.Width(EditorGUIUtility.labelWidth));
+            asset.Name = EditorGUILayout.TextField(asset.Name);
+            GUILayout.EndHorizontal();
 
-            extensionScroll = EditorGUILayout.BeginScrollView(extensionScroll);
-
-            foreach (var extension in extensions) {
+            foreach (var extension in GetExtensions()) {
                 if (extension.CanHandleType(asset.GetType())) {
                     extension.OnGUI(asset);
                 }
             }
-
-            EditorGUILayout.EndScrollView();
         }
     }
 }

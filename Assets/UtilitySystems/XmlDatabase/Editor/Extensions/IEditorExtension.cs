@@ -1,4 +1,4 @@
-﻿namespace UtilitySystem.XmlDatabase.Editor {
+﻿namespace UtilitySystems.XmlDatabase.Editor {
     public interface IEditorExtension {
         
         bool CanHandleType(System.Type type);

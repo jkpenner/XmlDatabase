@@ -1,9 +1,9 @@
-﻿using System.Xml;
-using UnityEngine;
+﻿using UnityEngine;
+using System.Xml;
 
-namespace UtilitySystem.XmlDatabase {
-    static public class XmlExtensions {
-        static public string GetStringAttribute(this XmlReader reader, string name, string defaultValue) {
+namespace UtilitySystems.XmlDatabase {
+    static public class XmlReaderExtension {
+        static public string GetAttrString(this XmlReader reader, string name, string defaultValue) {
             string value = reader.GetAttribute(name);
             if (value == string.Empty) {
                 return defaultValue;
@@ -11,7 +11,7 @@ namespace UtilitySystem.XmlDatabase {
             return value;
         }
 
-        static public int GetIntAttribute(this XmlReader reader, string name, int defaultValue) {
+        static public int GetAttrInt(this XmlReader reader, string name, int defaultValue) {
             string strValue = reader.GetAttribute(name);
             if (strValue == string.Empty) {
                 return defaultValue;
@@ -25,7 +25,7 @@ namespace UtilitySystem.XmlDatabase {
             return defaultValue;
         }
 
-        static public float GetFloatAttribute(this XmlReader reader, string name, float defaultValue) {
+        static public float GetAttrFloat(this XmlReader reader, string name, float defaultValue) {
             string strValue = reader.GetAttribute(name);
             if (strValue == string.Empty) {
                 return defaultValue;
@@ -53,7 +53,7 @@ namespace UtilitySystem.XmlDatabase {
             return defaultValue;
         }
 
-        static public EnumType GetEnumAttribute<EnumType>(this XmlReader reader, string name, EnumType defaultValue) {
+        static public EnumType GetAttrEnum<EnumType>(this XmlReader reader, string name, EnumType defaultValue) {
             string strValue = reader.GetAttribute(name);
             if (strValue == string.Empty) {
                 return defaultValue;
@@ -69,6 +69,19 @@ namespace UtilitySystem.XmlDatabase {
                 Debug.Log("Error occured whil parsing enum value. Returning default value.");
                 return defaultValue;
             }
+        }
+
+        static public GameObject GetAttrGameObject(this XmlReader reader, string name) {
+            string path = GetAttrString(reader, name, "");
+            if (!string.IsNullOrEmpty(path)) {
+                GameObject go = Resources.Load<GameObject>(path);
+                if (go != null) {
+                    return go;
+                } else {
+                    Debug.LogWarning("No GameObject found at path: " + path);
+                }
+            }
+            return null;
         }
     }
 }

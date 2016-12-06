@@ -1,22 +1,24 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using UtilitySystem.XmlDatabase;
-using UtilitySystem.XmlDatabase.Editor;
+using UtilitySystems.XmlDatabase;
+using UtilitySystems.XmlDatabase.Editor;
 
-public class ItemWindowComplex : XmlDatabaseWindowComplex<ItemAsset> {
-    [MenuItem("Window/RPGSystems/Item/Item Editor Complex")]
+public class ItemWindowSimple : XmlDatabaseWindowSimple<ItemAsset> {
+    private ItemDatabase _itemDatabase;
+
+    [MenuItem("Window/RPGSystems/Item/Item Editor Simple")]
     static public void ShowWindow() {
-        var wnd = GetWindow<ItemWindowComplex>();
-        wnd.titleContent.text = "Item Editor Complex";
+        var wnd = GetWindow<ItemWindowSimple>();
+        wnd.titleContent.text = "Item Editor Simple";
         wnd.Show();
     }
 
     protected override AbstractXmlDatabase<ItemAsset> GetDatabaseInstance() {
-        return ItemDatabase.Instance;
-    }
-
-    protected override ItemAsset CreateNewDatabaseAsset() {
-        return new ItemAsset(GetDatabaseInstance().GetNextId());
+        if (_itemDatabase == null) {
+            _itemDatabase = new ItemDatabase();
+            _itemDatabase.LoadDatabase();
+        }
+        return _itemDatabase;
     }
 
     protected override void DisplayAssetGUI(ItemAsset asset) {

@@ -1,4 +1,1 @@
-Version 1.0.2016.11.22
-
-#ToDo:
-Update XmlDatabaseWindowComplex with functionality to Save and Load the database
+Version 1.1.2016.12.06

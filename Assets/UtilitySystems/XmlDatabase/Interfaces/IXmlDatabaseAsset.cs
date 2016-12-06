@@ -1,6 +1,6 @@
 ﻿using System.Xml;
 
-namespace UtilitySystem.XmlDatabase {
+namespace UtilitySystems.XmlDatabase {
     public interface IXmlDatabaseAsset {
         int Id { get; set; }
         string Name { get; set; }

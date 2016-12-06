@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-namespace UtilitySystem.XmlDatabase.Editor {
+namespace UtilitySystems.XmlDatabase.Editor {
     public abstract class XmlDatabaseWindowComplex<DatabaseAssetType> 
         : XmlDatabaseWindow<DatabaseAssetType> where DatabaseAssetType 
         : class, IXmlDatabaseAsset, new(){
@@ -81,7 +81,7 @@ namespace UtilitySystem.XmlDatabase.Editor {
             GUILayout.FlexibleSpace();
 
             GUILayout.Label(string.Format("Assets: {0}",
-                GetDatabaseInstance().GetCount().ToString("D3")),
+                GetDatabaseInstance().GetAssetCount().ToString("D3")),
                 EditorStyles.centeredGreyMiniLabel);
         }
 
@@ -94,7 +94,7 @@ namespace UtilitySystem.XmlDatabase.Editor {
 
             OnDisplayDatabaseAssets(SelectedAssetId);
 
-            if (GetDatabaseInstance().GetCount() <= 0) {
+            if (GetDatabaseInstance().GetAssetCount() <= 0) {
                 GUILayout.Label("No Assets in Database\nPress '+' to add an asset", EditorStyles.centeredGreyMiniLabel);
             }
 
@@ -106,7 +106,7 @@ namespace UtilitySystem.XmlDatabase.Editor {
 
         private void DisplayContent() {
             GUILayout.BeginVertical();
-            var asset = GetDatabaseInstance().GetWithId(SelectedAssetId, true, false);
+            var asset = GetDatabaseInstance().Get(SelectedAssetId);
             if (asset != null) {
                 DisplayAssetGUI(asset);
             }

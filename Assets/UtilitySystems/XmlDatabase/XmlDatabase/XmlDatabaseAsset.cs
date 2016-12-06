@@ -2,11 +2,12 @@
 using System.Collections;
 using System;
 using System.Xml;
+using System.Xml.Serialization;
 
-
-namespace UtilitySystem.XmlDatabase {
+namespace UtilitySystems.XmlDatabase {
     public abstract class XmlDatabaseAsset : IXmlDatabaseAsset {
         public int Id { get; set; }
+
         public virtual string Name { get; set; }
 
         public string PerferredTypeString { get; set; }
@@ -20,14 +21,8 @@ namespace UtilitySystem.XmlDatabase {
             Id = id;
         }
 
-        public XmlDatabaseAsset(int id, string name) {
-            Initialize();
-            Id = id;
-            Name = name;
-        }
-
         public virtual void Initialize() {
-            Id = -1;
+            Id = 0;
             Name = string.Empty;
         }
 
