@@ -71,17 +71,21 @@ namespace UtilitySystems.XmlDatabase {
             }
         }
 
-        static public GameObject GetAttrGameObject(this XmlReader reader, string name) {
+        static public T GetAttrResource<T>(this XmlReader reader, string name) where T : UnityEngine.Object {
             string path = GetAttrString(reader, name, "");
             if (!string.IsNullOrEmpty(path)) {
-                GameObject go = Resources.Load<GameObject>(path);
-                if (go != null) {
-                    return go;
+                T t = Resources.Load<T>(path);
+                if (t != null) {
+                    return t;
                 } else {
-                    Debug.LogWarning("No GameObject found at path: " + path);
+                    Debug.LogWarning("No " + t.GetType().Name + " found at path: " + path);
                 }
             }
             return null;
+        }
+
+        static public GameObject GetAttrGameObject(this XmlReader reader, string name) {
+            return GetAttrResource<GameObject>(reader, name);
         }
     }
 }
