@@ -54,10 +54,12 @@ public class DemoManager : MonoBehaviour {
     }
 
     private void SetActiveItem(int itemId) {
-        var asset = DatabaseManager.ItemAssets.Get(itemId);
-        if (asset != null) {
-            ActiveItem = asset.CreateInstance();
-        }
+        ActiveItem = Item.Create(itemId);
+
+        //var asset = DatabaseManager.ItemAssets.Get(itemId);
+        //if (asset != null) {
+        //    ActiveItem = asset.CreateInstance();
+        //}
     }
 
     private void UpdateAcitveItemUI() {
