@@ -42,12 +42,35 @@ namespace UtilitySystems.XmlDatabase.Editor {
                 menu.AddSeparator(null);
             }
 
-            foreach(var asset in database.GetAssets()) {
+            foreach (var asset in database.GetAssets()) {
+                int selectedAssetId = asset.Id;
                 menu.AddItem(new GUIContent(asset.Name), false,
-                    (index) => { callback(database.Get(asset.Id)); }, asset.Id);
+                    (assetId) => { callback(database.Get((int)assetId)); }, selectedAssetId);
             }
 
             return menu;
+        }
+
+
+        public delegate void DatabaseIdFieldCallback(int newId);
+        static public int DatabaseIdField<T>(AbstractXmlDatabase<T> database, string label, int assetId, DatabaseIdFieldCallback callback, System.Type createNewWindow) where T : class, IXmlDatabaseAsset {
+            int value = 0;
+
+            GUILayout.BeginHorizontal();
+            var asset = database.LoadAsset(assetId);
+            GUILayout.Label(label, GUILayout.Width(EditorGUIUtility.labelWidth - 4));
+            if (GUILayout.Button(asset != null ? asset.Name : "Not Set", EditorStyles.toolbarDropDown)) {
+
+                XmlDatabaseEditorUtility.ShowContext(database, (selectedAsset) => {
+                    if (callback != null) {
+                        callback.Invoke(selectedAsset.Id);
+                    }
+                }, createNewWindow);
+
+            }
+            GUILayout.EndHorizontal();
+
+            return value;
         }
     }
 }
