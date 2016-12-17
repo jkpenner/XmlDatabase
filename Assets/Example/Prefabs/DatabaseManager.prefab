@@ -21,7 +21,7 @@ GameObject:
   - 4: {fileID: 4000010164927106}
   - 114: {fileID: 114000012857726106}
   m_Layer: 0
-  m_Name: ItemManager
+  m_Name: DatabaseManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

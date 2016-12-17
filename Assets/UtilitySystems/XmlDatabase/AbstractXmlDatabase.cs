@@ -41,6 +41,10 @@ namespace UtilitySystems.XmlDatabase {
             return AssetDict.Values;
         }
 
+        public Dictionary<int, T>.KeyCollection GetIds() {
+            return AssetDict.Keys;
+        }
+
         public AbstractXmlDatabase() {
             AssetDict = new Dictionary<int, T>();
         }

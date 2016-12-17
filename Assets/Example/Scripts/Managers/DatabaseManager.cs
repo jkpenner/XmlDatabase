@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UtilitySystems;
+using System;
 
 /// <summary>
 /// Example class that contains an instance of a Database that can
@@ -12,10 +13,7 @@ public class DatabaseManager : Singleton<DatabaseManager> {
     static public ItemDatabase ItemAssets {
         get {
             if (Instance != null) {
-                if (Instance._itemDatabase == null) {
-                    Instance._itemDatabase = new ItemDatabase();
-                    Instance._itemDatabase.LoadDatabase();
-                }
+                Instance.SetupItemDatabase();
                 return Instance._itemDatabase;
             }
             return null;
@@ -23,18 +21,13 @@ public class DatabaseManager : Singleton<DatabaseManager> {
     }
 
     public void Awake() {
+        SetupItemDatabase();
+    }
+
+    private void SetupItemDatabase() {
         if (_itemDatabase == null) {
             _itemDatabase = new ItemDatabase();
             _itemDatabase.LoadDatabase();
         }
-    }
-
-    public void Start() {
-        ItemAsset asset = null;
-        if (DatabaseManager.ItemAssets.TryGet(100, out asset)) {
-            var item = asset.CreateInstance();
-            // Use Item instance
-        }
-
     }
 }

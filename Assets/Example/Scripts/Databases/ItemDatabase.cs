@@ -7,9 +7,9 @@ public class ItemDatabase : AbstractXmlDatabase<ItemAsset> {
     public override string DatabasePath { get { return @"Databases/Item/"; } }
 
     public override ItemAsset CreateAssetOfType(string type) {
-        if (type == typeof(ItemAsset).Name) {
+        if (type == typeof(ItemAsset).Name || type == "Item") {
             return new ItemAsset(GetNextHighestId());
-        } else if (type == typeof(WeaponAsset).Name) {
+        } else if (type == typeof(WeaponAsset).Name || type == "Weapon") {
             return new WeaponAsset(GetNextHighestId());
         }
         return null;
@@ -17,8 +17,10 @@ public class ItemDatabase : AbstractXmlDatabase<ItemAsset> {
 
     public override string[] GetListOfAssetTypes() {
         return new string[] {
-            typeof(ItemAsset).Name,
-            typeof(WeaponAsset).Name,
+            "Item", // typeof(ItemAsset).Name,
+            "Weapon", //typeof(WeaponAsset).Name,
+            
+            
         };
     }
 }

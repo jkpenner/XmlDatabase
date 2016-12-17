@@ -13,9 +13,13 @@ public class ItemExtension : EditorExtension {
         var item = asset as ItemAsset;
         if (item == null) return;
 
-        GUILayout.Label("Item");
+        GUILayout.BeginHorizontal(EditorStyles.toolbar);
+        GUILayout.Label("Item", EditorStyles.centeredGreyMiniLabel);
+        GUILayout.EndHorizontal();
 
+        GUILayout.BeginVertical("Box");
         item.Cost = EditorGUILayout.IntField("Cost", item.Cost);
         item.Prefab = (GameObject)EditorGUILayout.ObjectField("Prefab", item.Prefab, typeof(GameObject), false);
+        GUILayout.EndVertical();
     }
 }

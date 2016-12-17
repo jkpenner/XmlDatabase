@@ -12,9 +12,13 @@ public class WeaponExtension : EditorExtension {
         var weapon = asset as WeaponAsset;
         if(weapon == null) return;
 
-        GUILayout.Label("Weapon");
+        GUILayout.BeginHorizontal(EditorStyles.toolbar);
+        GUILayout.Label("Weapon", EditorStyles.centeredGreyMiniLabel);
+        GUILayout.EndHorizontal();
 
+        GUILayout.BeginVertical("Box");
         weapon.Range = EditorGUILayout.FloatField("Range", weapon.Range);
         weapon.Damage = EditorGUILayout.FloatField("Damage", weapon.Damage);
+        GUILayout.EndVertical();
     }
 }
