@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Xml;
+using System.Xml.Serialization;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -238,6 +239,8 @@ namespace UtilitySystems.XmlDatabase {
             //
             //var deserializedAsset = (XmlDatabaseAsset)serializer.Deserialize(reader.ReadSubtree());
 
+            var databaseReader = new XmlDatabaseReader(reader);
+
             // read the asset until we reach the end element
             while (reader.Read()) {
                 // Stop reading the asset when we reach the Asset end element
@@ -248,7 +251,7 @@ namespace UtilitySystems.XmlDatabase {
                 // Check if we are reading an element of the asset
                 if (reader.NodeType == XmlNodeType.Element) {
                     // Make the object load it's data
-                    asset.OnLoadAsset(reader);
+                    asset.OnLoadAsset(databaseReader);
                 }
             }
 
@@ -394,6 +397,8 @@ namespace UtilitySystems.XmlDatabase {
             // Create an xml file at the database path
             using (var stream = File.Create(GetDatabaseFullPath())) {
                 using (XmlWriter writer = XmlWriter.Create(stream, settings)) {
+                    var databaseWriter = new XmlDatabaseWriter(writer);
+
                     writer.WriteStartDocument();
                     writer.WriteStartElement("Assets");
 
@@ -418,7 +423,7 @@ namespace UtilitySystems.XmlDatabase {
                         }
 
                         // Make the object save it's values
-                        asset.OnSaveAsset(writer);
+                        asset.OnSaveAsset(databaseWriter);
 
                         // Write the end Asset Element
                         writer.WriteEndElement();

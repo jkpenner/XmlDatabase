@@ -1,5 +1,3 @@
-﻿using System.Xml;
-
-public interface IXmlOnSaveAsset {
-    void OnSaveAsset(XmlWriter writer);
+﻿public interface IXmlOnSaveAsset {
+    void OnSaveAsset(XmlDatabaseWriter writer);
 }

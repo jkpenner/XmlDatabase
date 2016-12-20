@@ -1,5 +1,3 @@
-﻿using System.Xml;
-
-public interface IXmlOnLoadAsset {
-    void OnLoadAsset(XmlReader reader);
+﻿public interface IXmlOnLoadAsset {
+    void OnLoadAsset(XmlDatabaseReader reader);
 }

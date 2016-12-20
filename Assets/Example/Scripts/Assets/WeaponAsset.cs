@@ -5,27 +5,32 @@ using UtilitySystems.XmlDatabase;
 using System.Xml.Serialization;
 
 public class WeaponAsset : ItemAsset {
+    private const string elementWeapon = "WeaponValues";
+
+    private const string attrRange = "Range";
     public float Range { get; set; }
+
+    private const string attrDamage = "Damage";
     public float Damage { get; set; }
 
     public WeaponAsset() {}
     public WeaponAsset(int id) : base(id) {}
 
-    public override void OnSaveAsset(XmlWriter writer) {
+    public override void OnSaveAsset(XmlDatabaseWriter writer) {
         base.OnSaveAsset(writer);
 
-        writer.WriteStartElement("WeaponValues");
-        writer.SetAttr("Range", Range);
-        writer.SetAttr("Damage", Damage);
-        writer.WriteEndElement();
+        writer.StartElement(elementWeapon);
+        writer.SetAttr(attrRange, Range);
+        writer.SetAttr(attrDamage, Damage);
+        writer.EndElement();
     }
 
-    public override void OnLoadAsset(XmlReader reader) {
+    public override void OnLoadAsset(XmlDatabaseReader reader) {
         base.OnLoadAsset(reader);
 
-        if (reader.Name == "WeaponValues") {
-            Range = reader.GetAttrFloat("Range", 0f);
-            Damage = reader.GetAttrFloat("Damage", 0f);
+        if (reader.IsStartElement(elementWeapon)) {
+            Range = reader.GetAttrFloat(attrRange);
+            Damage = reader.GetAttrFloat(attrDamage);
         }
     }
 

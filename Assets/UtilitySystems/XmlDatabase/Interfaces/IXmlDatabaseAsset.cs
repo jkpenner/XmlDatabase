@@ -5,6 +5,6 @@ namespace UtilitySystems.XmlDatabase {
         int Id { get; set; }
         string Name { get; set; }
 
-        string PerferredTypeString { get; set; }
+        string PerferredTypeString { get; }
     }
 }

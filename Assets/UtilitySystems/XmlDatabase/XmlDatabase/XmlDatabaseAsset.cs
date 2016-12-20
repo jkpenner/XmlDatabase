@@ -10,7 +10,7 @@ namespace UtilitySystems.XmlDatabase {
 
         public virtual string Name { get; set; }
 
-        public string PerferredTypeString { get; set; }
+        public string PerferredTypeString { get { return string.Empty; } }
 
         public XmlDatabaseAsset() {
             Initialize();
@@ -26,7 +26,7 @@ namespace UtilitySystems.XmlDatabase {
             Name = string.Empty;
         }
 
-        public abstract void OnSaveAsset(XmlWriter writer);
-        public abstract void OnLoadAsset(XmlReader reader);
+        public abstract void OnSaveAsset(XmlDatabaseWriter writer);
+        public abstract void OnLoadAsset(XmlDatabaseReader reader);
     }
 }
