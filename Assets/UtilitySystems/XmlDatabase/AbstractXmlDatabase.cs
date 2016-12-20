@@ -20,6 +20,9 @@ namespace UtilitySystems.XmlDatabase {
         /// </summary>
         public abstract T CreateAssetOfType(string type);
 
+        /// <summary>
+        /// Gets a list of all asset types within the database
+        /// </summary>
         public virtual string[] GetListOfAssetTypes() { return null; }
 
         /// <summary>
@@ -38,14 +41,23 @@ namespace UtilitySystems.XmlDatabase {
         /// </summary>
         protected Dictionary<int, T> AssetDict { get; private set; }
 
+        /// <summary>
+        /// Get a collection with all the assets in the database
+        /// </summary>
         public Dictionary<int, T>.ValueCollection GetAssets() {
             return AssetDict.Values;
         }
 
+        /// <summary>
+        /// Get a collection with all the ids of assets in the database
+        /// </summary>
         public Dictionary<int, T>.KeyCollection GetIds() {
             return AssetDict.Keys;
         }
 
+        /// <summary>
+        /// Simple constructor
+        /// </summary>
         public AbstractXmlDatabase() {
             AssetDict = new Dictionary<int, T>();
         }
