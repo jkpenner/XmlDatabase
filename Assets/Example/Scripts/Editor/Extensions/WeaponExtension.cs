@@ -19,6 +19,7 @@ public class WeaponExtension : EditorExtension {
         GUILayout.BeginVertical("Box");
         weapon.Range = EditorGUILayout.FloatField("Range", weapon.Range);
         weapon.Damage = EditorGUILayout.FloatField("Damage", weapon.Damage);
+        weapon.Projectile = (GameObject)EditorGUILayout.ObjectField("Projectile", weapon.Projectile, typeof(GameObject), false);
         GUILayout.EndVertical();
     }
 }

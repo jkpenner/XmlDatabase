@@ -5,7 +5,6 @@ using System.Linq;
 
 public class DemoManager : MonoBehaviour {
     public Transform spawnPoint;
-    private GameObject activeItemInstance;
 
     public Text objectName;
     public Text objectCost;
@@ -14,12 +13,24 @@ public class DemoManager : MonoBehaviour {
     public Text objectRange;
     public Text objectDamage;
 
-    private Item activeItem = null;
-    public Item ActiveItem {
-        get { return activeItem; }
+    private ItemObject activeItemObject = null;
+    public ItemObject ActiveItemObject {
+        get { return activeItemObject; }
         set {
-            if (activeItem != value) {
-                activeItem = value;
+            if (activeItemObject != value) {
+
+                if (activeItemObject != null) {
+                    Destroy(activeItemObject.gameObject);
+                } 
+                
+                activeItemObject = value;
+                activeItemObject.transform.SetParent(spawnPoint);
+                activeItemObject.transform.localPosition = Vector3.zero;
+
+                var weaponObject = activeItemObject as WeaponObject;
+                if (weaponObject != null) {
+                    weaponObject.FireWeapon();
+                }
                 UpdateAcitveItemUI();
             }
         }
@@ -54,7 +65,12 @@ public class DemoManager : MonoBehaviour {
     }
 
     private void SetActiveItem(int itemId) {
-        ActiveItem = Item.Create(itemId);
+        var itemAsset = DatabaseManager.ItemAssets.Get(itemId);
+        if (itemAsset != null) {
+            ActiveItemObject = itemAsset.CreateObjectInstance();
+        } else {
+            ActiveItemObject = null;
+        }
 
         //var asset = DatabaseManager.ItemAssets.Get(itemId);
         //if (asset != null) {
@@ -63,11 +79,11 @@ public class DemoManager : MonoBehaviour {
     }
 
     private void UpdateAcitveItemUI() {
-        if (ActiveItem != null) {
-            objectName.text = string.Format("Id {0}, Name: {1}", ActiveItem.Id, ActiveItem.Name);
-            objectCost.text = string.Format("Cost: {0}", ActiveItem.Cost);
+        if (ActiveItemObject != null) {
+            objectName.text = string.Format("Id {0}, Name: {1}", ActiveItemObject.Data.Id, ActiveItemObject.Data.Name);
+            objectCost.text = string.Format("Cost: {0}", ActiveItemObject.Data.Cost);
 
-            var activeWeapon = ActiveItem as Weapon;
+            var activeWeapon = ActiveItemObject.GetDataAs<WeaponData>();
             if (activeWeapon != null) {
                 weaponGroup.SetActive(true);
                 objectDamage.text = string.Format("Damage: {0}", activeWeapon.Damage);
@@ -78,14 +94,6 @@ public class DemoManager : MonoBehaviour {
         } else {
             objectName.text = "Active Item Not Set";
             objectCost.text = "";
-        }
-
-        if (activeItemInstance != null) {
-            Destroy(activeItemInstance);
-        }
-
-        if (ActiveItem != null) {
-            activeItemInstance = Instantiate(ActiveItem.Prefab, spawnPoint, false) as GameObject;
         }
     }
 }

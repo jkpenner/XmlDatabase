@@ -2,25 +2,29 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class Item {
+public class ItemData {
+    public ItemAsset Asset { get; private set; }
+
     public int Id { get; private set; }
     public string Name { get; private set; }
 
     public int Cost { get; private set; }
     public GameObject Prefab { get; private set; }
 
-    public Item(ItemAsset asset) {
+    public ItemData(ItemAsset asset) {
+        this.Asset = asset;
+
         this.Id = asset.Id;
         this.Name = asset.Name;
         this.Cost = asset.Cost;
         this.Prefab = asset.Prefab;
     }
 
-    static public Item Create(int itemId) {
-        return Create<Item>(itemId);
+    static public ItemData Create(int itemId) {
+        return Create<ItemData>(itemId);
     }
 
-    static public T Create<T>(int id) where T : Item{
+    static public T Create<T>(int id) where T : ItemData{
         if (DatabaseManager.ItemAssets != null) {
             var asset = DatabaseManager.ItemAssets.Get(id);
             if (asset != null) {

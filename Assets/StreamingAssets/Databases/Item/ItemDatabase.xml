@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Assets>
-  <Asset Id="1" Name="Basic Weapon" Type="WeaponAsset">
+  <Asset Id="1" Name="Test Item 01" Type="ItemAsset">
+    <ItemValues Cost="52" Prefab="SimpleCapsule" />
+  </Asset>
+  <Asset Id="2" Name="Test Weapon 02" Type="WeaponAsset">
+    <ItemValues Cost="42" Prefab="SpikeSphere" />
+    <WeaponValues Range="43" Damage="23" Projectile="Projectile" />
+  </Asset>
+  <Asset Id="3" Name="Test Weapon 03" Type="WeaponAsset">
     <ItemValues Cost="10" Prefab="SimpleCube" />
-    <WeaponValues Range="8.6" Damage="32.1" />
-  </Asset>
-  <Asset Id="2" Name="BFG" Type="WeaponAsset">
-    <ItemValues Cost="0" Prefab="SpikeSphere" />
-    <WeaponValues Range="0" Damage="1337.42" />
-  </Asset>
-  <Asset Id="3" Name="Basic Item" Type="ItemAsset">
-    <ItemValues Cost="2" Prefab="SimpleCapsule" />
+    <WeaponValues Range="12" Damage="13" Projectile="Projectile" />
   </Asset>
 </Assets>
