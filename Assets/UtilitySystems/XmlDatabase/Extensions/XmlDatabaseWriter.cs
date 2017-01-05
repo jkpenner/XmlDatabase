@@ -3,6 +3,9 @@ using System.Collections;
 using System.Xml;
 using UtilitySystems.XmlDatabase;
 
+/// <summary>
+/// Wrapper class to simplify the XmlWriter
+/// </summary>
 public class XmlDatabaseWriter {
     public XmlWriter Writer { get; private set; }
 

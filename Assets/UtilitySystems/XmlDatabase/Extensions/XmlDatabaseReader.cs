@@ -2,6 +2,9 @@
 using System.Collections;
 using System.Xml;
 
+/// <summary>
+/// Wrapper class to simplify the XmlReader
+/// </summary>
 public class XmlDatabaseReader {
     public XmlReader Reader { get; private set; }
 
